@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'quiz_brain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
+QuizBrain quizBrain = QuizBrain();
 void main() => runApp(Quizzler());
 
 class Quizzler extends StatelessWidget {
@@ -26,7 +29,28 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   @override
+  List<Icon> scoreKeeper = [];
+  void checkingAnswer(bool correctAnswer, bool answer) {
+    setState(() {
+      if(quizBrain.isFinished()) {
+        Alert(context: context, title: "Finished!", desc: "You've reached the end of the quiz").show();
+        quizBrain.reset();
+        scoreKeeper = [];
+        print(scoreKeeper);
+      } else {
+        if(correctAnswer == answer) {
+          scoreKeeper.add(Icon(Icons.check, color: Colors.green));
+        } else {
+          scoreKeeper.add(Icon(Icons.close, color: Colors.red));
+        }
+        quizBrain.nextQuestion();
+      }
+    });
+  }
+
   Widget build(BuildContext context) {
+    bool correctAnswer = quizBrain.getCorrectAnswer();
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -37,7 +61,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                'This is where the question text will go.',
+                quizBrain.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -50,18 +74,17 @@ class _QuizPageState extends State<QuizPage> {
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              textColor: Colors.white,
-              color: Colors.green,
-              child: Text(
-                'True',
-                style: TextStyle(
-                  color: Colors.white,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.green,
+                textStyle: TextStyle(
                   fontSize: 20.0,
                 ),
               ),
+              child: Text('True'),
               onPressed: () {
-                //The user picked true.
+                checkingAnswer(correctAnswer, true);
               },
             ),
           ),
@@ -69,22 +92,22 @@ class _QuizPageState extends State<QuizPage> {
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              color: Colors.red,
-              child: Text(
-                'False',
-                style: TextStyle(
+            child: TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red,
+                textStyle: TextStyle(
                   fontSize: 20.0,
-                  color: Colors.white,
                 ),
               ),
+              child: Text('False'),
               onPressed: () {
-                //The user picked false.
+                checkingAnswer(correctAnswer, false);
               },
             ),
           ),
         ),
-        //TODO: Add a Row here as your score keeper
+        Row(children: scoreKeeper,)
       ],
     );
   }
@@ -93,5 +116,5 @@ class _QuizPageState extends State<QuizPage> {
 /*
 question1: 'You can lead a cow down stairs but not up stairs.', false,
 question2: 'Approximately one quarter of human bones are in the feet.', true,
-question3: 'A slug\'s blood is green.', true,
+question3: 'A slug's blood is green.', true,
 */
